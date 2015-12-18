@@ -1020,42 +1020,71 @@ A present with dimensions 2x3x4 requires 2*6 + 2*12 + 2*8 = 52 square feet of wr
 A present with dimensions 1x1x10 requires 2*1 + 2*10 + 2*10 = 42 square feet of wrapping paper plus 1 square foot of slack, for a total of 43 square feet.
 All numbers in the elves' list are in feet. How many total square feet of wrapping paper should they order?
 
+
+--- Part Two ---
+
+The elves are also running low on ribbon. Ribbon is all the same width, so they only have to worry about the length they need to order,
+which they would again like to be exact.
+
+The ribbon required to wrap a present is the shortest distance around its sides, or the smallest perimeter of any one face. 
+Each present also requires a bow made out of ribbon as well; the feet of ribbon required for the perfect bow is equal to the
+cubic feet of volume of the present. Don't ask how they tie the bow, though; they'll never tell.
+
+For example:
+
+A present with dimensions 2x3x4 requires 2+2+3+3 = 10 feet of ribbon to wrap the present plus 2*3*4 = 24 feet of ribbon for the bow,
+for a total of 34 feet.
+A present with dimensions 1x1x10 requires 1+1+1+1 = 4 feet of ribbon to wrap the present plus 1*1*10 = 10 feet of ribbon for the bow,
+for a total of 14 feet.
+How many total feet of ribbon should they order?
+
 */
 
 def getArea(def dim) {
-	println "* getArea * dim is: ${dim}"
-	int l = dim[0]
-	int w = dim[1]
-	int h = dim[2]
 	2*l*w + 2*w*h + 2*h*l	
 }
 
 def getAreaOfSmallestSide(def dim) {
-	int l = dim[0]
-	int w = dim[1]
-	int h = dim[2]
-	int s1 = l*w
-	int s2 = w*h
-	int s3 = h*l
-	Math.min(s1, Math.min(s2, s3))
+	def ary = [l*w, w*h, h*l]
+	ary.sort()
+	ary[0]
 }
 
-def total = 0
+def findSmallestPerimeter(def dim) {
+	(dim[0]*2) + (dim[1]*2)	
+}
+
+def calculateBowLength(def dim) {
+	dim[0] * dim[1] * dim[2]
+}
+
+l = 0
+w = 0
+h = 0
+paperTotal = 0
+ribbonTotal = 0
 input.eachLine {
-	println '*'
-	println "* it is: ${it}"
 	def dim = it.split('x')
 	dim = dim.collect { it.toInteger() }
+	dim.sort()
+	l = dim[0]
+	w = dim[1]
+	h = dim[2]
 	def area = getArea(dim)
-	println "* area is: ${area}"
 	def smallest = getAreaOfSmallestSide(dim)
-	println "* smallest side is: ${smallest}"
-	println "* total for it is: ${area + smallest}" 
-	println '*'
-	total += area + smallest
-	println "* total is now: ${total}"
+	paperTotal += area + smallest
+	
+	// Part 2
+	ribbonTotal += findSmallestPerimeter(dim)
+	ribbonTotal += calculateBowLength(dim)
 }
 
 println '*'
-println "* TOTAL is: ${String.format("%,d", total)}"
+println '* TOTAL Wrapping Paper is...'
+println "* $paperTotal or ${String.format("%,d", paperTotal)}"
+println '*'
+
+println '*'
+println '* TOTAL Ribbon is...'
+println "* $ribbonTotal or ${String.format("%,d", ribbonTotal)}"
 println '*'
