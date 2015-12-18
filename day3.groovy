@@ -42,7 +42,6 @@ def setCurrentVisited(def map, def x, def y) {
 	map["${x},${y}"] += 1
 }
 
-// Add initial house ;)
 def getDirections(def directions, def map, def x, def y) {
 	directions.each {
 		switch(it) {
@@ -65,7 +64,7 @@ def getDirections(def directions, def map, def x, def y) {
 def x = 0
 def y = 0
 def map = [:]
-setCurrentVisited(map, x, y)
+setCurrentVisited(map, x, y) // Add initial house ;) 
 def directions = input.toCharArray()
 getDirections(directions, map, x, y)
 // println "Map is: ${map}"
@@ -86,6 +85,7 @@ x = y = 0
 setCurrentVisited(map, x, y)
 getDirections(santaDirs, map, x, y)
 x = y = 0
+setCurrentVisited(map, x, y)
 getDirections(roboDirs, map, x, y)
 
 println "** Part 2 ** Map w/ at least 1 visit is: ${map.size()}"
