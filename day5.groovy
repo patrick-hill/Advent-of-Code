@@ -1088,9 +1088,63 @@ def checkRules(def input) {
 		}
 		print '\n'
 	}
-	println "Number of GOOD Strings is: ${goodCount}"
-	println "Number of BAD  Strings is: ${1000-goodCount}"
+	println "* Part 1 ** Number of GOOD Strings is: ${goodCount}"
+	println "* Part 1 ** Number of BAD  Strings is: ${1000-goodCount}"
 }
 
-checkRules(input)
+// checkRules(input)
 
+
+// Part 2
+// It contains a pair of any two letters that appears at least twice in the string without overlapping,
+// like xyxy (xy) or aabcdefgaa (aa), but not like aaa (aa, but it overlaps).
+// It contains at least one letter which repeats with exactly one letter between them, like xyx, abcdefeghi (efe), or even aaa.
+
+def hasRepeatChars(def str) {
+	def hasRepeats = false
+	str.eachWithIndex { String c, int i ->
+		if( i < str.length()-2 && str[i+2] == c) {
+			hasRepeats = true
+		}
+	}
+	if (debug) print "\tHas Repeating Chars: $hasRepeats"
+	hasRepeats
+}
+
+def hasRepeatingSets(def str) {
+	// for every two letters, check for a repeat after those two letters
+	def hasRepeatSets = false
+	str.eachWithIndex { String c, int i ->
+		if(i<str.length()-2) {
+			def set = str[i..i+1]
+			// print '\n'
+			// println "\t Set is: $set"
+			for(int j=i+2;j<str.length()-1;j++) {
+				// println "\t Checking Set against: ${str[j..j+1]}"
+				if(set == str[j..j+1]) {
+					// print "\t #FOUND ONE Set is: ${set}"
+					hasRepeatSets = true
+				}
+			}
+		}
+	}
+	if (debug) print "\tHas Repeating Sets: ${hasRepeatSets}"
+	hasRepeatSets
+}
+
+// input = 'qjhvhtzxzqqjkmpb'
+// input = 'xxyxx'
+def checkRulesPartTwo(def input) {
+	def count = 0
+	input.eachLine {
+		print "* Part 2 ** Testing String: ${it}"
+		if( hasRepeatChars(it) && hasRepeatingSets(it) ) {
+			count ++
+		}
+		print '\n'
+	}
+	println "* Part 2 ** Number of GOOD Strings is: ${count}"
+	println "* Part 2 ** Number of BAD  Strings is: ${1000-count}"
+}
+
+checkRulesPartTwo(input)
