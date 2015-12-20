@@ -1,6 +1,8 @@
 #!/usr/bin/env groovy
 
 
+def timeStart = new Date()
+
 def input = """turn on 887,9 through 959,629
 turn on 454,398 through 844,448
 turn off 539,243 through 559,965
@@ -324,60 +326,96 @@ toggle 0,0 through 999,0 would toggle the first line of 1000 lights, turning off
 turn off 499,499 through 500,500 would turn off (or leave off) the middle four lights.
 After following the instructions, how many lights are lit?
 
+--- Part Two ---
+
+You just finish implementing your winning light pattern when you realize you mistranslated Santa's message from Ancient Nordic Elvish.
+
+The light grid you bought actually has individual brightness controls; each light can have a brightness of zero or more. The lights all start at zero.
+
+The phrase turn on actually means that you should increase the brightness of those lights by 1.
+
+The phrase turn off actually means that you should decrease the brightness of those lights by 1, to a minimum of zero.
+
+The phrase toggle actually means that you should increase the brightness of those lights by 2.
+
+What is the total brightness of all lights combined after following Santa's instructions?
+
+For example:
+
+turn on 0,0 through 0,0 would increase the total brightness by 1.
+toggle 0,0 through 999,999 would increase the total brightness by 2000000.
 */
 
-// I've grown found of using maps for stuff like this... super easy and easy to understand for newbies...
-debug = true
 debug = false
-lights = [:]
 
-def map(def x, def y) {
-	lights["${x},${y}"]
-}
-
-def setLight(def x, def y, def val) {
-	// if (debug) println "Setting light ${x},${y} to: $val"
-	if (val == 'on' || val == 'off') {
-		lights["${x},${y}"] = val		
+def p(def str, def useHeader = false, def newLine = true) {
+	def msg
+	if(useHeader) {
+		msg = str
 	} else {
-		println '*'
-		println '*'
-		println "* Values is not on or off but is: $val"
-		println '*'
-		println '*'
+		msg = "*\n*${str}\n*"
+	}
+	if(newLine) {
+		println msg
+	} else {
+		print msg
 	}
 }
 
-def toggleLights(def x, def y) {
-	light = map(x, y)
-	def val = (light == 'on') ? 'off' : 'on'
-	if (debug) println "\tToggling light: ${x},${y} from ${light} to ${val}"
-	setLight(x, y, val)
-}
+lights = new int[1000][1000]
 
-def toggleRange(def startX, def endX, def startY, def endY) {
-	if (debug) println "\tToggling Range from: ${startX},${startY} to: ${endX},${endY}"
+def setRange(def startX, def startY, def endX, def endY, def isToggle, def val) {
 	(startX..endX).each { int x ->
 		(startY..endY).each { int y ->
-			toggleLights(x, y)
+			if (isToggle) {
+				if (debug) p "\tToggling ${x},${y}\t val: ${lights[x][y]} to ${(lights[x][y] == 1) ? 0 : 1}", true
+				lights[x][y] = (lights[x][y] == 1) ? 0 : 1
+				if (debug) p "\t\tAfter TOGGLINE VALUE IS: ${lights[x][y]}", true
+			} else {
+				if (debug) p "\tSetting ${x},${y}\t to val: ${val}", true
+				lights[x][y] += val
+				if(lights[x][y] < 0) {
+					lights[x][y] = 0
+				}
+			}
 		}
 	}
 }
 
-def setRange(def startX, def endX, def startY, def endY, def val) {
-	if (debug) println "\tSetting Range from: ${startX},${startY} to: ${endX},${endY} to val: $val"
-	(startX..endX).each { int x ->
-		(startY..endY).each { int y ->
-			setLight(x, y, val)
+def setLights(def input) {
+	def count = 1
+	input.eachLine {
+		def s = it.split(' ')
+		def start, end, toggle, val
+		// 'turn on 0,0 through 999,999'
+		// 'turn off 499,499 through 500,500'
+		if(s[0] == 'turn') {
+			start = s[2].split(',')
+			end = s[4].split(',')
+			val = (s[1] == 'on') ? 1 : -1
+		// 'toggle 0,0 through 999,0'
+		} else if (s[0] == 'toggle') {
+			start = s[1].split(',')
+			end = s[3].split(',')
+			// toggle = true
+			val = 2
 		}
+		if (debug) p "Instruction\t#${count} is: ${it}", true
+		if (debug) p "\tParsed instructions are: ${start[0].toInteger()},${start[1].toInteger()} to ${end[0].toInteger()},${end[1].toInteger()} :\ttoggle is: ${toggle} \tVal is:  ${val}\n", true 
+		setRange(start[0].toInteger(), start[1].toInteger(), end[0].toInteger(), end[1].toInteger(), toggle, val)
+		count++
 	}
 }
 
-def printDetails() {
-	def lightsOn = 0
+lightsOn = 0
+brightness = 0
+def getLightDetails() {
+	lightsOn = 0
+	brightness = 0
 	(0..999).each { int x ->
 		(0..999).each { int y ->
-			if(map(x, y) == 'on') {
+			brightness += lights[x][y]
+			if(lights[x][y] != 0) {
 				lightsOn++
 			}
 		}
@@ -385,54 +423,16 @@ def printDetails() {
 	lightsOn
 }
 
-// 'turn on 0,0 through 999,999'
-// 'toggle 0,0 through 999,0'
-// 'turn off 499,499 through 500,500'
-startX = ''
-startY = ''
-endX = ''
-endY = ''
-def parseInstructions(def str) {
-	str.eachLine {
-		if (debug) println "Instructions are: $it"
-		// tokenize line, follow various states
-		def s = it.tokenize()
-		if (s[0] == 'turn') {
-			def start = s[2].split(',')
-			startX = start[0].toInteger()
-			startY = start[1].toInteger()
-			def end = s[4].split(',')
-			endX = end[0].toInteger()
-			endY = end[1].toInteger()
-			valIsOn = (s[1] == 'on') ? 'on' : 'off'
-			setRange(startX, endX, startY, endY, valIsOn)
-		} else if (s[0] == 'toggle') {
-			def start = s[1].split(',')
-			startX = start[0].toInteger()
-			startY = start[1].toInteger()
-			def end = s[3].split(',')
-			endX = end[0].toInteger()
-			endY = end[1].toInteger()
-			toggleRange(startX, endX, startY, endY)
-		} else {
-			println 'FAILED'
-		}
-		if (debug) println '\n'
-	}
-	println 'Instruction parsing done...'
-}
+setLights(input)
+getLightDetails()
+p "Lights on are: ${lightsOn}"
+p "Total Brightness is: ${brightness}"
 
-def initLights() {
-	(0..999).each { int x ->
-		(0..999).each { int y ->
-			lights["${x},${y}"] = 'off'
-		}
-	}
-	println 'Lights created...'
-}
-
-// input = """turn on 0,0 through 999,999
-// toggle 0,0 through 999,0"""
-initLights()
-parseInstructions(input)
-println "Lights on after instructions are: ${printDetails()}"
+	
+	
+	
+// #####################################################
+// #	END CODE BLOCK # DO NOT PUT CODE BELOW HERE    #
+// #####################################################
+def duration = groovy.time.TimeCategory.minus(new Date(), timeStart)
+p "Script duration is: ${duration}"
