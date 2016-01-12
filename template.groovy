@@ -10,12 +10,12 @@ def timeStart = new Date()
 
 */
 
-def p(def str, def useHeader = false, def newLine = true) {
+def p(def str, def useHeader = true, def newLine = true) {
 	def msg
 	if(useHeader) {
-		msg = str
+		msg = "*\n* ${str}\n*"
 	} else {
-		msg = "*\n*${str}\n*"
+		msg = str
 	}
 	if(newLine) {
 		println msg
